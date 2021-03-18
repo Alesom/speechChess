@@ -1,4 +1,4 @@
-import { Component, NgZone } from '@angular/core';
+import {Component, NgZone, OnInit} from '@angular/core';
 
 declare const annyang: any;
 
@@ -7,80 +7,49 @@ declare const annyang: any;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  voiceActiveSectionDisabled = true;
-  voiceActiveSectionError = false;
-  voiceActiveSectionSuccess = false;
-  voiceActiveSectionListening = false;
+export class AppComponent implements OnInit {
   voiceText: any;
 
   constructor(private ngZone: NgZone){}
 
-  initializeVoiceRecognitionCallback(): void {
-    annyang.addCallback('error', (err: any) => {
-      if (err.error === 'network'){
-        this.voiceText = 'Internet is require';
-        annyang.abort();
-        this.ngZone.run(() => this.voiceActiveSectionSuccess = true);
-      } else if (this.voiceText === undefined) {
-        this.ngZone.run(() => this.voiceActiveSectionError = true);
-        annyang.abort();
-      }
-    });
+  ngOnInit(): void {
+    annyang.setLanguage('pt-br');
 
-    annyang.addCallback('soundstart', (res: any) => {
-      this.ngZone.run(() => this.voiceActiveSectionListening = true);
-    });
+    const pecas = {
+      'torre *pos': this.rook,
+      'cavalo *pos': this.knight,
+      'bispo *pos': this.bishop,
+      'dama *pos': this.queen,
+      'rei *pos': this.king,
+      'peão *pos': this.pawn,
+    };
 
-    annyang.addCallback('end', () => {
-      if (this.voiceText === undefined) {
-        this.ngZone.run(() => this.voiceActiveSectionError = true);
-        annyang.abort();
-      }
-    });
-
-    annyang.addCallback('result', (userSaid: any) => {
-      this.ngZone.run(() => this.voiceActiveSectionError = false);
-
-      const queryText: any = userSaid[0];
-
-      annyang.abort();
-
-      this.voiceText = queryText;
-
-      this.ngZone.run(() => this.voiceActiveSectionListening = false);
-      this.ngZone.run(() => this.voiceActiveSectionSuccess = true);
-    });
+    annyang.addCommands(pecas);
+    annyang.start({ autoRestart: false });
   }
 
-  startVoiceRecognition(): void {
-    this.voiceActiveSectionDisabled = false;
-    this.voiceActiveSectionError = false;
-    this.voiceActiveSectionSuccess = false;
-    this.voiceText = undefined;
-
-    if (annyang) {
-      const commands = {
-        'demo-annyang': () => { }
-      };
-
-      annyang.addCommands(commands);
-
-      this.initializeVoiceRecognitionCallback();
-
-      annyang.start({ autoRestart: false });
-    }
+  rook(pos: string): void {
+    alert('T' + pos);
   }
 
-  closeVoiceRecognition(): void {
-    this.voiceActiveSectionDisabled = true;
-    this.voiceActiveSectionError = false;
-    this.voiceActiveSectionSuccess = false;
-    this.voiceActiveSectionListening = false;
-    this.voiceText = undefined;
-
-    if (annyang) {
-      annyang.abort();
-    }
+  knight(pos: string): void {
+    alert('C' + pos);
   }
+
+  bishop(pos: string): void {
+    alert('B' + pos);
+  }
+
+  queen(pos: string): void {
+    alert('D' + pos);
+  }
+
+  king(pos: string): void {
+    alert('R' + pos);
+  }
+
+  pawn(pos: string): void {
+    alert(pos);
+  }
+
 }
